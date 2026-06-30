@@ -96,7 +96,7 @@ router.post(
       // cancel) on the hosted checkout page. Set FRONTEND_BASE_URL in
       // your .env — e.g. http://localhost:5000 for local dev, or your
       // live domain (https://heemahjewelry.com) in production.
-      const frontendBaseUrl = process.env.FRONTEND_BASE_URL || "http://localhost:5000";
+      const frontendBaseUrl = process.env.FRONTEND_BASE_URL || "https://heemahjewerlywebsite-production.up.railway.app/";
       const callbackUrl = `${frontendBaseUrl}/checkout-complete.html?reference=${reference}`;
 
       let transaction;
