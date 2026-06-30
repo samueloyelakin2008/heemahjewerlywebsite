@@ -1,0 +1,12 @@
+# Explicitly tells Nixpacks this is a Node.js app.
+# Without this, it can misdetect the project as a static site
+# when the root package.json only has devDependencies.
+
+[phases.setup]
+nixPkgs = ["nodejs_20"]
+
+[phases.install]
+cmds = ["cd backend && npm install --production"]
+
+[start]
+cmd = "cd backend && node server.js"
