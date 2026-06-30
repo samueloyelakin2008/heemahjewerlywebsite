@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Dashboard — Heemah Jewelry Admin</title>
+  <link rel="stylesheet" href="assets/css/admin.css?v=2">
+  <link rel="stylesheet" href="../frontend/assets/css/skeleton.css?v=2">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+    * { font-family: 'Poppins', Arial, sans-serif; }
+  </style>
+  <script src="https://www.gstatic.com/firebasejs/12.15.0/firebase-app-compat.js" defer></script>
+  <script src="https://www.gstatic.com/firebasejs/12.15.0/firebase-auth-compat.js" defer></script>
+  <script src="https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore-compat.js" defer></script>
+  <script src="assets/js/firebaseConfig.js?v=2" defer></script>
+  <script src="assets/js/toast.js?v=2" defer></script>
+  <script src="assets/js/auth.js?v=2" defer></script>
+  <script src="assets/js/products-admin.js?v=2" defer></script>
+</head>
+<body>
+
+  <div class="hj-topbar">
+    <div class="hj-topbar-brand">
+      <div class="hj-crest"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3h12l4 6-10 13L2 9Z"/><path d="M11 3 8 9l4 13 4-13-3-6"/><path d="M2 9h20"/></svg></div>
+      Heemah Admin
+    </div>
+    <div class="hj-topbar-user" id="hj-topbar-user">
+      <span class="hj-email" id="hj-admin-email">Loading…</span>
+      <button id="hj-signout-btn">Sign Out</button>
+    </div>
+  </div>
+
+  <main class="hj-main">
+    <div class="hj-page-header">
+      <div>
+        <h2>Products</h2>
+        <p>Manage what shows up on the storefront — changes go live immediately.</p>
+      </div>
+      <button class="hj-add-btn" id="hj-add-product-btn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+        Add Product
+      </button>
+    </div>
+
+    <div id="hj-offline-note"></div>
+
+    <div class="hj-product-list" id="hj-product-list">
+      <div class="hj-admin-skel-row"><div class="hj-skel hj-skel-thumb-sm"></div><div class="hj-skel hj-skel-line" style="width:60%"></div><div class="hj-skel hj-skel-line" style="width:50%"></div><div class="hj-skel hj-skel-line" style="width:70%"></div><div class="hj-skel hj-skel-line" style="width:40%"></div></div>
+      <div class="hj-admin-skel-row"><div class="hj-skel hj-skel-thumb-sm"></div><div class="hj-skel hj-skel-line" style="width:60%"></div><div class="hj-skel hj-skel-line" style="width:50%"></div><div class="hj-skel hj-skel-line" style="width:70%"></div><div class="hj-skel hj-skel-line" style="width:40%"></div></div>
+      <div class="hj-admin-skel-row"><div class="hj-skel hj-skel-thumb-sm"></div><div class="hj-skel hj-skel-line" style="width:60%"></div><div class="hj-skel hj-skel-line" style="width:50%"></div><div class="hj-skel hj-skel-line" style="width:70%"></div><div class="hj-skel hj-skel-line" style="width:40%"></div></div>
+      <div class="hj-admin-skel-row"><div class="hj-skel hj-skel-thumb-sm"></div><div class="hj-skel hj-skel-line" style="width:60%"></div><div class="hj-skel hj-skel-line" style="width:50%"></div><div class="hj-skel hj-skel-line" style="width:70%"></div><div class="hj-skel hj-skel-line" style="width:40%"></div></div>
+    </div>
+  </main>
+
+  <!-- Shared overlay for both modals -->
+  <div class="hj-overlay" id="hj-overlay"></div>
+
+  <!-- Add/Edit Product Modal -->
+  <div class="hj-modal" id="hj-product-modal">
+    <div class="hj-modal-card">
+      <div class="hj-modal-header">
+        <h3 id="hj-product-modal-title">Add Product</h3>
+        <button class="hj-modal-close" id="hj-product-modal-close" aria-label="Close">&times;</button>
+      </div>
+      <div class="hj-modal-body">
+        <div id="hj-product-form-alert"></div>
+
+        <div class="hj-dropzone" id="hj-dropzone">
+          <input type="file" id="hj-image-input" accept="image/jpeg,image/png,image/webp,image/gif">
+          <div id="hj-dropzone-empty">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>
+            <p>Click or drag a photo here<br><span style="opacity:.7">JPEG, PNG, WEBP or GIF — up to 5MB</span></p>
+          </div>
+          <div class="hj-dropzone-preview" id="hj-dropzone-preview" style="display:none;">
+            <img id="hj-dropzone-preview-img" src="" alt="Preview">
+            <button type="button" class="hj-remove-preview" id="hj-remove-preview" aria-label="Remove image">&times;</button>
+          </div>
+        </div>
+        <p class="hj-field-error" id="hj-image-error" style="display:none;"></p>
+
+        <div class="hj-field" id="hj-field-name">
+          <label for="hj-input-name">Product Name</label>
+          <input type="text" id="hj-input-name" placeholder="e.g. Signet Ring">
+          <p class="hj-field-error"></p>
+        </div>
+        <div class="hj-field" id="hj-field-price">
+          <label for="hj-input-price">Price (₦)</label>
+          <input type="number" id="hj-input-price" placeholder="e.g. 3500" min="1" step="1">
+          <p class="hj-field-error"></p>
+        </div>
+        <div class="hj-field" id="hj-field-category">
+          <label for="hj-input-category">Category</label>
+          <select id="hj-input-category">
+            <option value="">Select a category</option>
+            <option>Rings</option>
+            <option>Necklaces</option>
+            <option>Bracelets</option>
+            <option>Earrings</option>
+            <option>Anklets</option>
+            <option>Other</option>
+          </select>
+          <p class="hj-field-error"></p>
+        </div>
+        <div class="hj-field" id="hj-field-description">
+          <label for="hj-input-description">Description</label>
+          <textarea id="hj-input-description" placeholder="A short, enticing description shoppers will see"></textarea>
+          <p class="hj-field-error"></p>
+        </div>
+
+        <div class="hj-toggle-row">
+          <span>Visible on storefront</span>
+          <label class="hj-toggle">
+            <input type="checkbox" id="hj-input-active" checked>
+            <span class="hj-toggle-slider"></span>
+          </label>
+        </div>
+      </div>
+      <div class="hj-modal-footer">
+        <button class="hj-btn-secondary" id="hj-product-modal-cancel">Cancel</button>
+        <button class="hj-btn-gold" id="hj-product-modal-save">Save Product</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div class="hj-modal" id="hj-delete-modal">
+    <div class="hj-modal-card hj-modal-sm">
+      <div class="hj-modal-header">
+        <h3>Delete Product?</h3>
+        <button class="hj-modal-close" id="hj-delete-modal-close" aria-label="Close">&times;</button>
+      </div>
+      <div class="hj-modal-body">
+        <p>Are you sure you want to delete "<strong id="hj-delete-product-name"></strong>"? This can't be undone.</p>
+      </div>
+      <div class="hj-modal-footer">
+        <button class="hj-btn-secondary" id="hj-delete-modal-cancel">Cancel</button>
+        <button class="hj-btn-gold hj-btn-danger" id="hj-delete-modal-confirm">Delete</button>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

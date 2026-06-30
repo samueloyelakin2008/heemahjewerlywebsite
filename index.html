@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    // Remap Tailwind's "indigo" palette to the Heemah gold brand colors
+    // (same gold used in cart.css / --hj-gold) so the whole site matches
+    // the cart/checkout color scheme instead of the old purple-indigo theme.
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            indigo: {
+              50:  '#fdfaf0',
+              100: '#f7efd9',
+              200: '#f0e3bd',
+              300: '#e3cb87',
+              400: '#d6b454',
+              500: '#c9a227',
+              600: '#b38f20',
+              700: '#8a6d1f',
+              800: '#6b5418',
+              900: '#4f3e12',
+            },
+          },
+        },
+      },
+    };
+  </script>
+  <link rel="stylesheet" href="frontend/assets/css/style.css?v=2">
+  <link rel="stylesheet" href="frontend/assets/css/skeleton.css?v=2">
+  <!-- Firebase (Firestore powers the live product catalog — see frontend/assets/js/products.js) -->
+  <script src="https://www.gstatic.com/firebasejs/12.15.0/firebase-app-compat.js" defer></script>
+  <script src="https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore-compat.js" defer></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+    * {
+        font-family: 'Poppins', sans-serif;
+    }
+</style>
+  <title>HEEMAH JEWERLY</title>
+</head>
+<body>
+
+      <!-- ============ Hero  Card ============ -->
+  <section>
+<div class="hero">
+  <svg class="bg-deco" viewBox="0 0 1000 600" fill="none">
+    <circle cx="800" cy="100" r="380" stroke="white" stroke-width=".8"/>
+    <circle cx="800" cy="100" r="220" stroke="white" stroke-width=".8"/>
+    <circle cx="100" cy="520" r="320" stroke="white" stroke-width=".8"/>
+    <line x1="0" y1="220" x2="1000" y2="220" stroke="white" stroke-width=".5"/>
+    <line x1="0" y1="420" x2="1000" y2="420" stroke="white" stroke-width=".5"/>
+  </svg>
+<nav class="flex items-center justify-between px-6 md:px-16 lg:px-24 xl:px-32 py-4  bg-linear-gradient(135deg,#1e1b4b 0%,#312e81 40%,#4c1d95 70%,#6d28d9 100%)relative transition-all">
+    <a href="https://prebuiltui.com">
+        <img class="h-9" src="https://raw.githubusercontent.com/prebuiltui/prebuiltui/main/assets/dummyLogo/dummyLogoColored.svg" alt="dummyLogoColored">
+    </a>
+
+    <button aria-label="Menu" id="menu-toggle" class="sm:hidden">
+        <svg width="21" height="15" viewBox="0 0 21 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="21" height="1.5" rx=".75" fill="#426287"/>
+            <rect x="8" y="6" width="13" height="1.5" rx=".75" fill="#426287"/>
+            <rect x="6" y="13" width="15" height="1.5" rx=".75" fill="#426287"/>
+        </svg>
+    </button>
+
+    <div id="mobile-menu" class="hidden absolute top-[60px] left-0 w-full bg-white shadow-md py-4 flex-col items-start gap-2 px-5 text-sm md:hidden">
+        <a  href="index.html" class="block">Home</a>
+        <a href="#products" class="block">Products</a>
+        <a href="#contact" class="block">Contact</a>
+        <button class="cursor-pointer px-6 py-2 mt-2 bg-indigo-500 hover:bg-indigo-600 transition text-white rounded-full text-sm">
+            Login
+        </button>
+    </div>
+
+    <div class="hidden sm:flex items-center gap-8 text-white">
+        <a href="index.html" class="block">Home</a>
+        <a href="#products" class="block">Products</a>
+        <a href="#contact" class="block">Contact</a>
+
+        <div class="hidden lg:flex items-center text-sm gap-2 border border-gray-300 px-3 rounded-full opacity-0">
+            <input class="py-1.5 w-full bg-transparent outline-none placeholder-gray-500" type="text" placeholder="Search products" />
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M10.836 10.615 15 14.695" stroke="#7A7B7D" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path clip-rule="evenodd" d="M9.141 11.738c2.729-1.136 4.001-4.224 2.841-6.898S7.67.921 4.942 2.057C2.211 3.193.94 6.281 2.1 8.955s4.312 3.92 7.041 2.783" stroke="#7A7B7D" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </div>
+
+        <div class="relative cursor-pointer" id="cart-icon-btn">
+            <svg width="18" height="18" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M.583.583h2.333l1.564 7.81a1.17 1.17 0 0 0 1.166.94h5.67a1.17 1.17 0 0 0 1.167-.94l.933-4.893H3.5m2.333 8.75a.583.583 0 1 1-1.167 0 .583.583 0 0 1 1.167 0m6.417 0a.583.583 0 1 1-1.167 0 .583.583 0 0 1 1.167 0" stroke="#615fff" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <button class="absolute -top-2 -right-3 text-xs text-white bg-indigo-500 w-[18px] h-[18px] rounded-full" id="cart-badge">0</button>
+        </div>
+
+        <button class="cursor-pointer px-8 py-2 bg-white hover:bg-indigo-600 transition text-black rounded-full">
+            Get Started
+        </button>
+    </div>
+</nav>
+
+
+  <div class="hero-body">
+    <div style="display:flex;flex-direction:column;align-items:flex-start">
+      <div class="badge h-badge"><span class="dot"></span><span class="badge-text">New Collection 2026</span></div>
+      <h1 class="hero-h1 h-h1">Timeless<br/>Elegance,<br/><em>Crafted for You.</em></h1>
+      <p class="hero-desc h-p">Exquisite jewelry pieces designed to celebrate your beauty, confidence, and unforgettable moments.</p>
+      <div class="btn-row h-btns">
+        <a href="#products" class="cta-btn">
+          GET STARTED
+          <span class="cta-icon"><svg width="13" height="11" viewBox="0 0 12 10" fill="none"><path d="M.6 4.6h10m-4-4 4 4-4 4" stroke="white" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        </a>
+        <a href="contact.html" class="ghost-btn">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+          CONTACT US
+        </a>
+      </div>
+      
+    </div>
+
+    <div class="img-cluster">
+      <div class="img-echo-wrap img-echo"><img src="img/product-09.jpg" alt=""/></div>
+      <div class="img-main-wrap img-main">
+        <img src="img/product-18.jpg" alt="Heemah jewelry model"/>
+        <div class="img-overlay"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="scroll-hint">
+    <span class="scroll-lbl">Scroll</span>
+    <svg width="14" height="18" viewBox="0 0 14 20" fill="none"><rect x="4" y="1" width="6" height="10" rx="3" stroke="rgba(255,255,255,.3)" stroke-width="1.4"/><line x1="7" y1="4" x2="7" y2="7" stroke="rgba(255,255,255,.5)" stroke-width="1.4" stroke-linecap="round"/></svg>
+  </div>
+</div>
+</section>
+<section>
+      <!-- ============ Product Cards============ -->
+
+<section id="products" class="py-20">
+  <h2 class="text-3xl md:text-4xl font-medium text-center mb-8">
+    Featured Products
+  </h2>
+  <h3 class="text-lg text-center text-slate-600 mb-12">
+    Discover our latest collection
+  </h3>
+
+  <main class="px-6 md:px-[5%] py-12 max-w-[80rem] mx-auto">
+
+    <!-- ===== PRODUCT GRID =====
+         Populated dynamically by assets/js/products.js from Firestore.
+         The 6 skeleton cards below show immediately on page load and
+         are replaced the moment real product data arrives (from cache
+         or from Firestore), so there's never a blank flash. ===== -->
+    <div class="card-grid grid gap-6"
+         style="grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));">
+      <div class="skeleton-card" aria-hidden="true"><div class="hj-skel hj-skel-thumb"></div><div class="hj-skel hj-skel-title"></div><div class="hj-skel hj-skel-price"></div><div class="hj-skel hj-skel-desc"></div><div class="hj-skel hj-skel-btn"></div></div>
+      <div class="skeleton-card" aria-hidden="true"><div class="hj-skel hj-skel-thumb"></div><div class="hj-skel hj-skel-title"></div><div class="hj-skel hj-skel-price"></div><div class="hj-skel hj-skel-desc"></div><div class="hj-skel hj-skel-btn"></div></div>
+      <div class="skeleton-card" aria-hidden="true"><div class="hj-skel hj-skel-thumb"></div><div class="hj-skel hj-skel-title"></div><div class="hj-skel hj-skel-price"></div><div class="hj-skel hj-skel-desc"></div><div class="hj-skel hj-skel-btn"></div></div>
+      <div class="skeleton-card" aria-hidden="true"><div class="hj-skel hj-skel-thumb"></div><div class="hj-skel hj-skel-title"></div><div class="hj-skel hj-skel-price"></div><div class="hj-skel hj-skel-desc"></div><div class="hj-skel hj-skel-btn"></div></div>
+      <div class="skeleton-card" aria-hidden="true"><div class="hj-skel hj-skel-thumb"></div><div class="hj-skel hj-skel-title"></div><div class="hj-skel hj-skel-price"></div><div class="hj-skel hj-skel-desc"></div><div class="hj-skel hj-skel-btn"></div></div>
+      <div class="skeleton-card" aria-hidden="true"><div class="hj-skel hj-skel-thumb"></div><div class="hj-skel hj-skel-title"></div><div class="hj-skel hj-skel-price"></div><div class="hj-skel hj-skel-desc"></div><div class="hj-skel hj-skel-btn"></div></div>
+    </div>
+
+    <!-- ===== REVEAL BUTTON =====
+         Hidden until products.js knows how many "extra" products exist
+         and sets the real count (no more hardcoded "15"). ===== -->
+    <div class="reveal-wrap" id="reveal-wrap" style="display:none;">
+      <button class="reveal-btn" id="reveal-btn" onclick="toggleExtraProducts()">
+        <span class="pulse-ring"></span>
+        <svg class="btn-icon" id="btn-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+             viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 3c-1 3-3.5 4.5-6 5 .5 4 2.5 6.5 6 8.5 3.5-2 5.5-4.5 6-8.5-2.5-.5-5-2-6-5z"/>
+          <path d="M12 3v18M8 10l4 2 4-2"/>
+        </svg>
+        <span id="btn-label">See More Pieces</span>
+        <span class="count-badge" id="btn-count"></span>
+      </button>
+      <span class="reveal-hint" id="reveal-hint">Tap to expand the full collection</span>
+    </div>
+
+    <!-- ===== EXTRA PRODUCTS (hidden by default, filled in by products.js) ===== -->
+    <div class="extra-section" id="extra-section">
+      <div class="extra-grid" id="extra-grid"
+           style="grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));">
+      </div>
+    </div>
+
+  </main>
+</section>
+
+
+
+      <!-- ============ Shop With Us ============ -->
+
+
+<section id="services">
+    <div class="w-full py-20 px-6 flex flex-col items-center">
+    <div class="text-center mx-auto">
+        <h2 class="text-3xl md:text-4xl font-medium text-center mb-8">
+            Why Shop With Us?
+        </h2>
+        <p class="text-sm md:text-base text-slate-600 mt-3 max-w-[530px] mx-auto">Experience the Heemah Jewelry difference — genuine materials, honest pricing, and service that cares as much as you do.</p>
+    </div>
+
+    <!--  Features Grid  -->
+    <div class="w-full max-w-5xl mx-auto mt-16 relative grid grid-cols-1 md:grid-cols-3 border-x border-slate-100 md:divide-x divide-y md:divide-y-0 divide-slate-100">
+     
+        <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[80vw] h-px bg-linear-to-r from-slate-50 via-slate-200 to-slate-50"></div>
+        <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-[80vw] h-px bg-linear-to-r from-slate-50 via-slate-200 to-slate-50"></div>
+
+        <!-- Genuine Materials -->
+         
+        <div class="flex flex-col items-start px-6 py-8 hover:bg-slate-50 transition-colors">
+            <div class="size-13 flex items-center justify-center border border-slate-200 rounded-lg mb-11">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 3h12l4 6-10 13L2 9Z" stroke="#314158" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M11 3 8 9l4 13 4-13-3-6" stroke="#314158" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 9h20" stroke="#314158" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <h3 class="text-base font-medium text-slate-800">Genuine Materials</h3>
+            <p class="text-sm text-slate-600 mt-2.5">
+                Every piece is made with quality cubic zirconia, sterling silver, and stainless steel — no shortcuts, no fakes.
+            </p>
+        </div>
+
+        <!-- Honest Pricing -->
+        <div class="flex flex-col items-start px-6 py-8 hover:bg-slate-50 transition-colors">
+            <div class="size-13 flex items-center justify-center border border-slate-200 rounded-lg mb-11">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z" stroke="#314158" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="m9 12 2 2 4-4" stroke="#314158" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <h3 class="text-base font-medium text-slate-800">Honest, Affordable Pricing</h3>
+            <p class="text-sm text-slate-600 mt-2.5">
+                Statement-piece looks without the statement-piece markup. No hidden fees, no inflated tags.
+            </p>
+        </div>
+
+        <!-- Fast Delivery -->
+        <div class="flex flex-col items-start px-6 py-8 hover:bg-slate-50 transition-colors">
+            <div class="size-13 flex items-center justify-center border border-slate-200 rounded-lg mb-11">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2" stroke="#314158" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 18H9" stroke="#314158" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14" stroke="#314158" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="17" cy="18" r="2" stroke="#314158" stroke-width="2"/><circle cx="7" cy="18" r="2" stroke="#314158" stroke-width="2"/></svg>
+            </div>
+            <h3 class="text-base font-medium text-slate-800">Fast, Trackable Delivery</h3>
+            <p class="text-sm text-slate-600 mt-2.5">
+                Your order leaves carefully packed and reaches you quickly, with tracking every step of the way.
+            </p>
+            
+        </div>
+
+        <!-- Secure Packaging -->
+        <div class="flex flex-col items-start px-6 py-8 hover:bg-slate-50 transition-colors">
+            <div class="size-13 flex items-center justify-center border border-slate-200 rounded-lg mb-11">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" stroke="#314158" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="m9 12 2 2 4-4" stroke="#314158" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <h3 class="text-base font-medium text-slate-800">Carefully Packaged</h3>
+            <p class="text-sm text-slate-600 mt-2.5">
+                Every piece arrives cushioned and protected, so it looks just as good in hand as it did online.
+            </p>
+        </div>
+
+        <!-- Easy Returns -->
+        <div class="flex flex-col items-start px-6 py-8 hover:bg-slate-50 transition-colors">
+            <div class="size-13 flex items-center justify-center border border-slate-200 rounded-lg mb-11">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" stroke="#314158" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 3v5h5" stroke="#314158" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <h3 class="text-base font-medium text-slate-800">Easy Returns & Exchanges</h3>
+            <p class="text-sm text-slate-600 mt-2.5">
+                Not quite right? Swap it or send it back — no stress, no complicated process.
+            </p>
+        </div>
+
+        <!-- Customer Support -->
+        <div class="flex flex-col items-start px-6 py-8 hover:bg-slate-50 transition-colors">
+            <div class="size-13 flex items-center justify-center border border-slate-200 rounded-lg mb-11">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 11h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H3v-7a9 9 0 1 1 18 0v7h-3a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3" stroke="#314158" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <h3 class="text-base font-medium text-slate-800">Friendly Customer Support</h3>
+            <p class="text-sm text-slate-600 mt-2.5">
+                Questions about sizing, care, or your order? A real person is just a message away.
+            </p>
+            <a href="https://wa.me/2348132852928?text=Hi%20HEEMAH%2C%20I%27m%20interested%20in%20your%20jewelry." class="mt-8 flex items-center gap-1.5 text-sm text-slate-600 hover:text-slate-800 transition-colors group">
+                Chat With Us
+                <svg class="transition-transform group-hover:translate-x-0.5" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+            </a>
+        </div>
+    </div>
+</div>
+</section>
+<!-- ============ Contact ============ -->
+ <section id="contact">
+<div class="flex items-center justify-center px-4 py-20">
+    <div class="max-w-5xl w-full grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-20">
+
+        <div class="flex flex-col items-start text-left">
+            <div class="inline-flex items-center justify-center border border-zinc-200 bg-indigo-600 rounded-full px-4 py-1.5 text-sm text-white mb-4">
+                Contact us
+            </div>
+            <h1 class="text-[40px] font-medium text-zinc-900 leading-tight mb-1.5">
+                Still have questions?
+            </h1>
+            <p class="text-sm text-zinc-600 max-w-[360px] mb-6 leading-relaxed">
+                Need help with components, setup, or customization? We're here to support you.
+            </p>
+
+            <div class="flex flex-col space-y-5">
+                <div class="flex items-center gap-2">
+                    <div class="size-9 rounded-full bg-zinc-100 flex items-center justify-center shrink-0">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="m18.333 5.836-7.492 4.772a1.67 1.67 0 0 1-1.674 0l-7.5-4.772" stroke="#71717b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M16.667 3.336H3.333c-.92 0-1.666.746-1.666 1.667v10c0 .92.746 1.666 1.666 1.666h13.334c.92 0 1.666-.746 1.666-1.666v-10c0-.92-.746-1.667-1.666-1.667" stroke="#71717b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </div>
+                    <span class="text-sm text-zinc-600">hello@prebuiltUI.com</span>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <div class="size-9 rounded-full bg-zinc-100 flex items-center justify-center shrink-0">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><g clip-path="url(#a)"><path d="M11.527 13.804a.83.83 0 0 0 1.01-.252l.296-.388a1.67 1.67 0 0 1 1.334-.667h2.5a1.667 1.667 0 0 1 1.666 1.667v2.5a1.667 1.667 0 0 1-1.666 1.667 15 15 0 0 1-15-15 1.667 1.667 0 0 1 1.666-1.667h2.5A1.667 1.667 0 0 1 7.5 3.331v2.5a1.67 1.67 0 0 1-.667 1.333l-.39.293A.83.83 0 0 0 6.2 8.484a11.67 11.67 0 0 0 5.327 5.32" stroke="#71717b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g><defs><clipPath id="a"><path fill="#fff" d="M0 0h20v20H0z"/></clipPath></defs></svg>
+                    </div>
+                    <span class="text-sm text-zinc-600">+91-9341555-010</span>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <div class="size-9 rounded-full bg-zinc-100 flex items-center justify-center shrink-0">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M16.667 8.33c0 4.162-4.616 8.495-6.166 9.833a.83.83 0 0 1-1.002 0c-1.55-1.338-6.166-5.671-6.166-9.832a6.667 6.667 0 0 1 13.334 0" stroke="#71717b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 10.836a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5" stroke="#71717b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </div>
+                    <span class="text-sm text-zinc-600">2425 HSR Layout, Bangalore, TX73301</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="border border-zinc-200 rounded-2xl p-6 md:p-8 w-full max-w-[470px] mx-auto md:ml-auto md:mr-0 bg-indigo-200">
+            <form class="flex flex-col space-y-6" id="hj-contact-form">
+                
+                <div class="flex flex-col space-y-2">
+                    <label class="text-sm text-zinc-700">Full Name</label>
+                    <input type="text" placeholder="Enter your name" class="rounded-full border border-zinc-200 px-4 py-2.5 text-sm text-zinc-900 placeholder:text-zinc-500 focus:outline-none focus:border-zinc-400" />
+                </div>
+
+                <div class="flex flex-col space-y-2">
+                    <label class="text-sm text-zinc-700">Email address</label>
+                    <input type="email" placeholder="Enter you email" class="rounded-full border border-zinc-200 px-4 py-2.5 text-sm text-zinc-900 placeholder:text-zinc-500 focus:outline-none focus:border-zinc-400" />
+                </div>
+
+                <div class="flex flex-col space-y-2">
+                    <label class="text-sm text-zinc-700">Message</label>
+                    <textarea placeholder="Enter your message" class="rounded-xl border border-zinc-200 px-4 py-3 text-sm text-zinc-900 placeholder:text-zinc-500 focus:outline-none focus:border-zinc-400 h-24 resize-none"></textarea>
+                </div>
+
+                <button type="submit" class="w-full bg-indigo-600 text-white text-sm py-3 rounded-full hover:bg-indigo-700 transition-colors cursor-pointer">
+                    Submit
+                </button>
+            </form>
+        </div>
+
+    </div>
+</div>
+ </section>
+ <footer class="bg-white border-t border-slate-200 mt-16">
+
+  <div class="max-w-7xl mx-auto px-5 py-10">
+
+    <!-- Main Footer -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+
+      <!-- Brand -->
+      <div>
+        <h2 class="text-2xl font-bold text-indigo-600">
+          HEEMAH JEWELRY
+        </h2>
+
+        <p class="mt-3 text-slate-600 text-sm leading-6">
+          Elegant jewelry crafted to celebrate beauty, confidence,
+          and life's special moments.
+        </p>
+      </div>
+
+      <!-- Shop -->
+      <div>
+        <h3 class="font-semibold text-slate-800 mb-4">
+          Shop
+        </h3>
+
+        <ul class="space-y-2 text-sm">
+          <li><a href="#" class="text-slate-600 hover:text-indigo-600">Rings</a></li>
+          <li><a href="#" class="text-slate-600 hover:text-indigo-600">Necklaces</a></li>
+          <li><a href="#" class="text-slate-600 hover:text-indigo-600">Bracelets</a></li>
+          <li><a href="#" class="text-slate-600 hover:text-indigo-600">Earrings</a></li>
+        </ul>
+      </div>
+
+      <!-- Support -->
+      <div>
+        <h3 class="font-semibold text-slate-800 mb-4">
+          Support
+        </h3>
+
+        <ul class="space-y-2 text-sm">
+          <li><a href="#" class="text-slate-600 hover:text-indigo-600">Contact Us</a></li>
+          <li><a href="#" class="text-slate-600 hover:text-indigo-600">Shipping</a></li>
+          <li><a href="#" class="text-slate-600 hover:text-indigo-600">Returns</a></li>
+          <li><a href="#" class="text-slate-600 hover:text-indigo-600">FAQ</a></li>
+        </ul>
+      </div>
+
+      <!-- Newsletter -->
+      <div>
+        <h3 class="font-semibold text-slate-800 mb-4">
+          Stay Updated
+        </h3>
+
+        <p class="text-sm text-slate-600 mb-3">
+          Get updates on new arrivals and special offers.
+        </p>
+
+        <form class="space-y-3" id="hj-newsletter-form">
+          <input
+            type="email"
+            placeholder="Your email"
+            class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          >
+
+          <button
+            class="w-full bg-indigo-600 text-white py-2.5 rounded-lg hover:bg-indigo-700 transition">
+            Subscribe
+          </button>
+        </form>
+      </div>
+
+    </div>
+
+    <!-- Divider -->
+    <div class="border-t border-slate-200 mt-10 pt-6">
+
+      <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+
+        <p class="text-sm text-slate-500 text-center md:text-left">
+          © 2026 HEEMAH JEWELRY. All rights reserved.
+        </p>
+
+        <!-- Socials -->
+        <div class="flex items-center gap-5">
+
+          <a href="#" class="text-slate-500 hover:text-indigo-600 transition">
+            <i class="fab fa-instagram text-xl"></i>
+          </a>
+
+          <a href="#" class="text-slate-500 hover:text-indigo-600 transition">
+            <i class="fab fa-facebook-f text-xl"></i>
+          </a>
+
+          <a href="#" class="text-slate-500 hover:text-indigo-600 transition">
+            <i class="fab fa-tiktok text-xl"></i>
+          </a>
+
+          <a href="#" class="text-slate-500 hover:text-indigo-600 transition">
+            <i class="fab fa-whatsapp text-xl"></i>
+          </a>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+</footer>
+
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+<!-- ============ Cart Drawer + Checkout Modal (markup lives in cart.html, injected by cart.js) ============ -->
+<link rel="stylesheet" href="frontend/assets/css/cart.css?v=2">
+<script src="https://js.paystack.co/v1/inline.js"></script>
+<script src="frontend/assets/js/firebaseConfig.js?v=2" defer></script>
+<script src="frontend/assets/js/products.js?v=2" defer></script>
+<script src="frontend/assets/js/cart.js?v=2" defer></script>
+<script src="frontend/assets/js/checkout.js?v=2" defer></script>
+<script src="frontend/assets/js/script.js?v=2" defer></script>
+</body>
+</html>

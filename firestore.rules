@@ -1,0 +1,35 @@
+rules_version = '2';
+
+// Deploy with: firebase deploy --only firestore:rules
+// (after `firebase init firestore` and pointing it at this file)
+//
+// SECURITY MODEL:
+// - The storefront reads products directly with the Firestore client
+//   SDK, so reads must be public — there's no login wall for shoppers.
+// - ALL writes are denied here, on purpose. Product create/update/
+//   delete only ever happens through the backend's /api/admin/*
+//   routes, which use the Firebase ADMIN SDK (a privileged service
+//   account that bypasses these rules entirely) after independently
+//   verifying the caller is a signed-in, email-verified, allowlisted
+//   admin. That backend check is the real gate — these rules are a
+//   second, independent layer that makes sure NO client (not even a
+//   signed-in admin's browser, not even a bug in some other part of
+//   the app) can write to Firestore directly. Defense in depth: even
+//   if the backend had a bug, the database itself still refuses
+//   client writes.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // Deny everything else by default — if you add more collections
+    // later, give them their own explicit rule rather than relying on
+    // this catch-all to do something sensible for them.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

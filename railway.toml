@@ -1,0 +1,29 @@
+# ====================================================================
+# HEEMAH JEWELRY — Railway deployment config
+# Docs: https://docs.railway.app/reference/config-as-code
+# ====================================================================
+
+[build]
+# Railway auto-detects Node.js. This just makes it explicit.
+builder = "NIXPACKS"
+
+# Railway runs `npm install` in the root by default.
+# Our package.json lives inside /backend, so point it there.
+buildCommand = "cd backend && npm install --production"
+
+[deploy]
+startCommand = "cd backend && node server.js"
+
+# Keep one instance alive at all times (no sleep on free tier with
+# a paid plan — on free tier Railway gives $5 credit/month which
+# covers a lightweight Node server for the full month at ~$0.01/hr).
+numReplicas = 1
+
+# Railway will set PORT automatically. server.js already reads
+# process.env.PORT so nothing else needs to change.
+
+# Health check — Railway pings this to know the server is up.
+# Matches the /api/health route already in server.js.
+[deploy.healthcheck]
+path = "/api/health"
+timeoutSeconds = 10

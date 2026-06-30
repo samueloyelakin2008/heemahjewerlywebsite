@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Confirming Your Payment — HEEMAH JEWELRY</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+  :root {
+    --hj-gold: #c9a14a;
+    --hj-gold-dark: #a8842f;
+    --hj-ink: #1f1b16;
+    --hj-bg: #faf8f4;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Poppins', sans-serif;
+    background: var(--hj-bg);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    color: var(--hj-ink);
+  }
+
+  .hj-confirm-card {
+    width: 100%;
+    max-width: 440px;
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 18px 50px rgba(31, 27, 22, 0.08);
+    padding: 40px 32px;
+    text-align: center;
+  }
+
+  .hj-icon-wrap {
+    width: 68px;
+    height: 68px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 22px;
+  }
+
+  .hj-icon-wrap.is-loading { background: #f4ede0; }
+  .hj-icon-wrap.is-success { background: #e6f4ea; }
+  .hj-icon-wrap.is-error   { background: #fbeaea; }
+  .hj-icon-wrap.is-pending { background: #f4ede0; }
+
+  .hj-spinner {
+    width: 28px;
+    height: 28px;
+    border: 3px solid rgba(168, 132, 47, 0.25);
+    border-top-color: var(--hj-gold-dark);
+    border-radius: 50%;
+    animation: hj-spin 0.8s linear infinite;
+  }
+
+  @keyframes hj-spin { to { transform: rotate(360deg); } }
+
+  h1 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+
+  p.hj-sub {
+    font-size: 0.92rem;
+    color: #6b6258;
+    line-height: 1.55;
+    margin-bottom: 22px;
+  }
+
+  .hj-ref {
+    font-size: 0.78rem;
+    color: #9a9088;
+    background: #f6f3ee;
+    border-radius: 8px;
+    padding: 8px 12px;
+    display: inline-block;
+    margin-bottom: 24px;
+    word-break: break-all;
+  }
+
+  .hj-btn {
+    display: inline-block;
+    width: 100%;
+    padding: 13px 20px;
+    border-radius: 999px;
+    font-size: 0.92rem;
+    font-weight: 500;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.15s ease, opacity 0.15s ease;
+  }
+
+  .hj-btn-primary {
+    background: linear-gradient(135deg, var(--hj-gold), var(--hj-gold-dark));
+    color: #fff;
+    margin-bottom: 10px;
+  }
+
+  .hj-btn-secondary {
+    background: transparent;
+    color: var(--hj-ink);
+    border: 1px solid #e3ddd2;
+  }
+
+  .hj-btn:active { transform: scale(0.98); }
+  .hj-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  .hj-hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+  <div class="hj-confirm-card">
+
+    <!-- Loading state -->
+    <div id="hj-state-loading">
+      <div class="hj-icon-wrap is-loading"><div class="hj-spinner"></div></div>
+      <h1>Confirming your payment&hellip;</h1>
+      <p class="hj-sub">Please don't close this page. This usually takes just a few seconds.</p>
+    </div>
+
+    <!-- Success state -->
+    <div id="hj-state-success" class="hj-hidden">
+      <div class="hj-icon-wrap is-success">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#2e7d46" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+      </div>
+      <h1>Thank you for your order!</h1>
+      <p class="hj-sub" id="hj-success-msg">Your payment has been confirmed. A receipt has been sent to your email.</p>
+      <div class="hj-ref" id="hj-success-ref"></div>
+      <br>
+      <a href="index.html" class="hj-btn hj-btn-primary">Continue Shopping</a>
+    </div>
+
+    <!-- Failed state -->
+    <div id="hj-state-failed" class="hj-hidden">
+      <div class="hj-icon-wrap is-error">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#c0392b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </div>
+      <h1>Payment not successful</h1>
+      <p class="hj-sub" id="hj-failed-msg">Your payment wasn't completed. No charge was made. You can return to your bag and try again.</p>
+      <a href="index.html" class="hj-btn hj-btn-primary">Return to Shop</a>
+    </div>
+
+    <!-- Pending / couldn't confirm state -->
+    <div id="hj-state-pending" class="hj-hidden">
+      <div class="hj-icon-wrap is-pending">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#a8842f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      </div>
+      <h1>Still confirming&hellip;</h1>
+      <p class="hj-sub">We couldn't confirm your payment status just now, but if you were charged, your order is safe — we'll email your receipt shortly.</p>
+      <div class="hj-ref" id="hj-pending-ref"></div>
+      <br>
+      <button type="button" class="hj-btn hj-btn-primary" id="hj-pending-retry">Check Again</button>
+      <a href="index.html" class="hj-btn hj-btn-secondary">Return to Shop</a>
+    </div>
+
+    <!-- No reference found -->
+    <div id="hj-state-missing" class="hj-hidden">
+      <div class="hj-icon-wrap is-error">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#c0392b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      </div>
+      <h1>We couldn't find your order</h1>
+      <p class="hj-sub">No payment reference was found on this page. If you completed a payment, please check your email for a receipt or contact support.</p>
+      <a href="index.html" class="hj-btn hj-btn-primary">Return to Shop</a>
+    </div>
+
+  </div>
+
+<script>
+(function () {
+  "use strict";
+
+  var API_BASE = window.HJ_API_BASE || "/api";
+
+  function showState(name) {
+    ["loading", "success", "failed", "pending", "missing"].forEach(function (s) {
+      var el = document.getElementById("hj-state-" + s);
+      if (el) el.classList.toggle("hj-hidden", s !== name);
+    });
+  }
+
+  function getReference() {
+    var params = new URLSearchParams(window.location.search);
+    var ref = params.get("reference") || params.get("trxref");
+    if (!ref) {
+      try { ref = sessionStorage.getItem("heemah_pending_reference"); } catch (e) {}
+    }
+    return ref;
+  }
+
+  function verify(reference) {
+    showState("loading");
+
+    fetch(API_BASE + "/verify-payment", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ reference: reference }),
+    })
+      .then(function (res) {
+        return res.json().then(function (data) {
+          return { ok: res.ok, status: res.status, data: data };
+        });
+      })
+      .then(function (result) {
+        if (result.ok && result.data.success) {
+          try { sessionStorage.removeItem("heemah_pending_reference"); } catch (e) {}
+          try { if (window.HJCart) window.HJCart.clearCart(); } catch (e) {}
+          document.getElementById("hj-success-ref").textContent = "Order ID: " + (result.data.orderId || reference);
+          showState("success");
+        } else if (result.status === 402) {
+          document.getElementById("hj-failed-msg").textContent =
+            (result.data && result.data.message) || "Your payment wasn't completed. No charge was made.";
+          showState("failed");
+        } else {
+          document.getElementById("hj-pending-ref").textContent = "Reference: " + reference;
+          showState("pending");
+        }
+      })
+      .catch(function (err) {
+        console.error("[checkout-complete] verify error:", err);
+        document.getElementById("hj-pending-ref").textContent = "Reference: " + reference;
+        showState("pending");
+      });
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    var reference = getReference();
+    if (!reference) {
+      showState("missing");
+      return;
+    }
+
+    verify(reference);
+
+    var retryBtn = document.getElementById("hj-pending-retry");
+    if (retryBtn) {
+      retryBtn.addEventListener("click", function (e) {
+        e.preventDefault();
+        verify(reference);
+      });
+    }
+  });
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Sign In — Heemah Jewelry Admin</title>
+  <link rel="stylesheet" href="assets/css/admin.css?v=2">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+    * { font-family: 'Poppins', Arial, sans-serif; }
+  </style>
+  <!-- Firebase (Auth only needed here — Firestore loads too since firebaseConfig.js initializes both) -->
+  <script src="https://www.gstatic.com/firebasejs/12.15.0/firebase-app-compat.js" defer></script>
+  <script src="https://www.gstatic.com/firebasejs/12.15.0/firebase-auth-compat.js" defer></script>
+  <script src="https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore-compat.js" defer></script>
+  <script src="assets/js/firebaseConfig.js?v=2" defer></script>
+  <script src="assets/js/toast.js?v=2" defer></script>
+  <script src="assets/js/auth.js?v=2" defer></script>
+</head>
+<body>
+  <div class="hj-login-page">
+    <div class="hj-login-card">
+      <div class="hj-login-logo">
+        <div class="hj-crest">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3h12l4 6-10 13L2 9Z"/><path d="M11 3 8 9l4 13 4-13-3-6"/><path d="M2 9h20"/></svg>
+        </div>
+        <h1>HEEMAH JEWELRY</h1>
+        <p>Admin sign-in</p>
+      </div>
+
+      <div id="hj-login-error" class="hj-alert hj-alert-error" style="display:none;"></div>
+
+      <form id="hj-login-form" autocomplete="on">
+        <div class="hj-field">
+          <label for="hj-login-email">Email</label>
+          <input type="email" id="hj-login-email" name="email" autocomplete="username" required placeholder="you@heemahjewelry.com">
+        </div>
+        <div class="hj-field">
+          <label for="hj-login-password">Password</label>
+          <input type="password" id="hj-login-password" name="password" autocomplete="current-password" required placeholder="••••••••">
+        </div>
+        <div class="hj-field-row">
+          <label class="hj-checkbox-label">
+            <input type="checkbox" id="hj-login-remember">
+            Remember me on this device
+          </label>
+          <button type="button" class="hj-link" id="hj-login-forgot">Forgot password?</button>
+        </div>
+        <button type="submit" class="hj-btn-gold" id="hj-login-submit">Sign In</button>
+      </form>
+    </div>
+  </div>
+</body>
+</html>
