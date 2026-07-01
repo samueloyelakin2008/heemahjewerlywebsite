@@ -9,7 +9,7 @@
 (function () {
   "use strict";
 
-  var API_BASE = window.HJ_API_BASE || "/api";
+  var API_BASE = window.HJ_API_BASE || "https://heemahjewerlywebsite.onrender.com/api";
 
   // Payment summary step removed — checkout.html handles that.
   // "paying" is an internal transient state (not shown in step indicator).
