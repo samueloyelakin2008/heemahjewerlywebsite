@@ -6,7 +6,7 @@
 (function () {
   "use strict";
 
-  const API_BASE = window.HJ_ADMIN_API_BASE || "https://heemahjewerlywebsite-production.up.railway.app/api/admin";
+  const API_BASE = window.HJ_ADMIN_API_BASE || "https://heemahjewerlywebsite.onrender.com/api/admin";
   const IDLE_LIMIT_MS = 15 * 60 * 1000; // auto sign-out after 15 minutes of inactivity
   const IDLE_WARNING_MS = 60 * 1000; // warn 60s before signing out
 
